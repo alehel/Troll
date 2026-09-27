@@ -1,0 +1,12 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Exports
+/export/
+*.pck
+*.zip
+
+# Python caches from the asset tools
+__pycache__/
+*.pyc

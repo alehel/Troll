@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <rect width="32" height="32" rx="6" fill="#2f4a3a"/>
+  <!-- mountains -->
+  <path d="M0 24 L8 14 L13 19 L20 9 L32 22 L32 32 L0 32 Z" fill="#46644f"/>
+  <path d="M18 11 L20 9 L22 11 L21 12 L19 12 Z" fill="#eef2f5"/>
+  <!-- troll body -->
+  <rect x="9" y="15" width="14" height="13" fill="#8a7a64"/>
+  <rect x="8" y="17" width="1" height="9" fill="#8a7a64"/>
+  <rect x="23" y="17" width="1" height="9" fill="#8a7a64"/>
+  <rect x="10" y="13" width="12" height="2" fill="#8a7a64"/>
+  <!-- moss hair -->
+  <rect x="10" y="11" width="12" height="3" fill="#6f9a45"/>
+  <rect x="12" y="10" width="3" height="1" fill="#6f9a45"/>
+  <rect x="18" y="10" width="2" height="1" fill="#6f9a45"/>
+  <rect x="19" y="9" width="2" height="1" fill="#e86a7a"/>
+  <!-- eyes -->
+  <rect x="12" y="17" width="2" height="2" fill="#1e1a18"/>
+  <rect x="18" y="17" width="2" height="2" fill="#1e1a18"/>
+  <rect x="12" y="17" width="1" height="1" fill="#ffffff"/>
+  <rect x="18" y="17" width="1" height="1" fill="#ffffff"/>
+  <!-- nose -->
+  <rect x="14" y="18" width="4" height="5" fill="#a58c72"/>
+  <rect x="13" y="21" width="6" height="2" fill="#a58c72"/>
+  <!-- smile -->
+  <rect x="13" y="24" width="1" height="1" fill="#1e1a18"/>
+  <rect x="14" y="25" width="4" height="1" fill="#1e1a18"/>
+  <rect x="18" y="24" width="1" height="1" fill="#1e1a18"/>
+  <!-- scarf -->
+  <rect x="9" y="26" width="14" height="2" fill="#c8453c"/>
+</svg>
