@@ -74,7 +74,7 @@ func _start_carry() -> void:
 
 func _fly(t: float) -> void:
 	var q := _over.lerp(_dest, t)
-	q.y = lerpf(_over.y, _dest.y, t) + sin(t * PI) * 9.0
+	q.y = lerpf(_over.y, _dest.y, t) + sin(t * PI) * 6.0
 	global_position = q
 	rotation.x = t * 6.0
 

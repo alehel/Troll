@@ -71,13 +71,13 @@ void sky() {
 	if (aurora > 0.01 && h > 0.03) {
 		vec2 ap = d.xz / (h + 0.25);
 		float wave = sin(ap.x * 2.2 + TIME * 0.25 + sin(ap.y * 1.3 + TIME * 0.17) * 1.5);
-		float band = smoothstep(0.55, 0.0, abs(ap.y + 1.1 + wave * 0.35));
+		float band = smoothstep(0.7, 0.0, abs(ap.y + 0.75 + wave * 0.35));
 		float curtain = vnoise(vec2(ap.x * 9.0 + TIME * 0.4, TIME * 0.1)) * 0.7 + 0.3;
 		float fade = smoothstep(0.03, 0.2, h) * (1.0 - smoothstep(0.55, 0.95, h));
-		vec3 ac = mix(vec3(0.2, 1.0, 0.55), vec3(0.6, 0.35, 0.95), smoothstep(0.1, 0.7, h));
+		vec3 ac = mix(vec3(0.25, 1.0, 0.55), vec3(0.62, 0.4, 0.95), smoothstep(0.62, 0.95, h + curtain * 0.15));
 		float a = band * curtain * fade * aurora;
 		a = floor(a * 5.0) / 5.0;
-		col += ac * a * 0.8;
+		col += ac * a * 0.95;
 	}
 	COLOR = col;
 }

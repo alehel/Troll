@@ -18,6 +18,7 @@ var kit := MeshKit.new(31)
 var glass := MeshKit.new(32)
 var glow := MeshKit.new(33)
 var body: StaticBody3D
+var small: StaticBody3D
 ## id -> {door: Vector3, gift: Vector3, xf: Transform3D}
 var houses := {}
 var smoke_points: Array = []
@@ -44,6 +45,11 @@ func build(t: Terrain) -> void:
 	body.name = "BuildingColliders"
 	body.collision_layer = 1 | 16
 	add_child(body)
+	# small props block walking but not the camera
+	small = StaticBody3D.new()
+	small.name = "PropColliders"
+	small.collision_layer = 1
+	add_child(small)
 	for id in Layout.HOUSES.keys():
 		_build_house(id)
 	_build_farm_extras()
@@ -80,23 +86,23 @@ func place_yaw(x: float, z: float, yaw: float, y := NAN) -> Transform3D:
 	return Transform3D(Basis(Vector3.UP, yaw), Vector3(x, yy, z))
 
 
-func collider(xf: Transform3D, center: Vector3, size: Vector3) -> void:
+func collider(xf: Transform3D, center: Vector3, size: Vector3, small_prop := false) -> void:
 	var cs := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
 	sh.size = size
 	cs.shape = sh
 	cs.transform = xf * Transform3D(Basis.IDENTITY, center)
-	body.add_child(cs)
+	(small if small_prop else body).add_child(cs)
 
 
-func cyl_collider(pos: Vector3, radius: float, height: float) -> void:
+func cyl_collider(pos: Vector3, radius: float, height: float, small_prop := false) -> void:
 	var cs := CollisionShape3D.new()
 	var sh := CylinderShape3D.new()
 	sh.radius = radius
 	sh.height = height
 	cs.shape = sh
 	cs.position = pos + Vector3(0, height * 0.5, 0)
-	body.add_child(cs)
+	(small if small_prop else body).add_child(cs)
 
 
 func clear_zone(x: float, z: float, r: float) -> void:
@@ -306,7 +312,7 @@ func _build_farm_extras() -> void:
 		var y := gy(p.x, p.y)
 		kit.xform = Transform3D(Basis(Vector3.FORWARD, PI * 0.5), Vector3(p.x, y + 0.6, p.y))
 		kit.cylinder(Vector3(0, -0.7, 0), 0.6, 0.6, 1.4, 8, Color(0.85, 0.75, 0.4), Color(0.78, 0.66, 0.34))
-		cyl_collider(Vector3(p.x, y, p.y), 0.7, 1.2)
+		cyl_collider(Vector3(p.x, y, p.y), 0.7, 1.2, true)
 
 
 func _build_ole_extras() -> void:
@@ -329,7 +335,7 @@ func _build_ole_extras() -> void:
 	kit.box(Vector3(0, 2.15, 0), Vector3(4.6, 0.1, 0.1), WOOD)
 	for i in range(7):
 		kit.box(Vector3(-1.8 + i * 0.6, 1.7, 0), Vector3(0.18, 0.8, 0.08), Color(0.78, 0.74, 0.62))
-	collider(rxf, Vector3(0, 1.1, 0), Vector3(4.6, 2.2, 1.0))
+	collider(rxf, Vector3(0, 1.1, 0), Vector3(4.6, 2.2, 1.0), true)
 
 
 func _build_village_props() -> void:
@@ -344,7 +350,7 @@ func _build_village_props() -> void:
 	kit.gable_roof(Vector3(0, 2.5, 0), 2.4, 1.6, 0.8, 0.15, TURF, WOOD)
 	kit.box(Vector3(0, 1.9, 0), Vector3(2.0, 0.1, 0.1), DARK_WOOD)
 	kit.cylinder(Vector3(0.1, 1.2, 0), 0.22, 0.25, 0.4, 6, Color(0.55, 0.4, 0.26))
-	cyl_collider(Vector3(w.x, y - 0.2, w.y), 1.2, 2.0)
+	cyl_collider(Vector3(w.x, y - 0.2, w.y), 1.2, 2.0, true)
 	# notice board
 	var nb: Vector2 = Layout.ANCHORS["notice_board"]
 	var nxf := place(nb.x, nb.y - 1.2, 0.0, 44.0)
@@ -356,7 +362,7 @@ func _build_village_props() -> void:
 	kit.box(Vector3(-0.55, 1.6, 0.07), Vector3(0.6, 0.7, 0.02), Color(0.95, 0.93, 0.85))
 	kit.box(Vector3(0.35, 1.45, 0.07), Vector3(0.55, 0.5, 0.02), Color(0.95, 0.88, 0.7))
 	kit.box(Vector3(0.6, 1.85, 0.07), Vector3(0.4, 0.35, 0.02), Color(0.85, 0.92, 0.95))
-	collider(nxf, Vector3(0, 1.0, 0), Vector3(2.4, 2.0, 0.4))
+	collider(nxf, Vector3(0, 1.0, 0), Vector3(2.4, 2.0, 0.4), true)
 	# benches
 	for b in [[Vector2(-5, 47), Vector2(0, 44)], [Vector2(5, 47.5), Vector2(0, 44)], [Vector2(10, 38.5), Vector2(10, 44)], [Vector2(-10, 57), Vector2(-14, 70)]]:
 		var p: Vector2 = b[0]
@@ -367,7 +373,7 @@ func _build_village_props() -> void:
 		kit.box(Vector3(0, 0.75, -0.25), Vector3(1.8, 0.4, 0.08), WOOD)
 		kit.box(Vector3(-0.75, 0.22, 0), Vector3(0.1, 0.45, 0.45), DARK_WOOD)
 		kit.box(Vector3(0.75, 0.22, 0), Vector3(0.1, 0.45, 0.45), DARK_WOOD)
-		collider(bxf, Vector3(0, 0.4, 0), Vector3(1.8, 0.8, 0.6))
+		collider(bxf, Vector3(0, 0.4, 0), Vector3(1.8, 0.8, 0.6), true)
 	# bakery stand
 	var bs: Vector2 = Layout.ANCHORS["bakery_stand"]
 	var sxf := place(bs.x - 1.2, bs.y - 1.2, 0.0, 44.0)
@@ -380,7 +386,7 @@ func _build_village_props() -> void:
 	kit.box_rot(Vector3(0, 2.05, 0.05), Vector3(2.3, 0.08, 1.2), Vector3(0.3, 0, 0), Color(0.85, 0.3, 0.3))
 	for i in range(4):
 		kit.blob(Vector3(-0.7 + i * 0.45, 0.95, 0.05), Vector3(0.18, 0.12, 0.18), Color(0.82, 0.58, 0.3), 2, 6)
-	collider(sxf, Vector3(0, 0.5, 0), Vector3(2.0, 1.0, 1.0))
+	collider(sxf, Vector3(0, 0.5, 0), Vector3(2.0, 1.0, 1.0), true)
 	# lamp posts
 	for lp in [Vector2(-2.5, 38.5), Vector2(6.5, 48.8), Vector2(-9, 46.8), Vector2(9, 48.2), Vector2(5.2, 62.5), Vector2(-26, 45.6), Vector2(22, 49.2), Vector2(-7, 58)]:
 		_lamp_post(lp.x, lp.y)
@@ -403,7 +409,7 @@ func _lamp_post(x: float, z: float) -> void:
 	glow.xform = kit.xform
 	glow.box(Vector3(0, 2.88, 0), Vector3(0.32, 0.4, 0.32), Color(1.0, 0.85, 0.5))
 	lamp_points.append(Vector3(x, y + 2.9, z))
-	cyl_collider(Vector3(x, y, z), 0.2, 2.5)
+	cyl_collider(Vector3(x, y, z), 0.2, 2.5, true)
 
 
 func _build_dock() -> void:
@@ -549,7 +555,7 @@ func _arch_bridge(center: Vector2, dir: Vector2, half_len: float, width: float, 
 				kit.box(Vector3(0, 0.45, 0), Vector3(0.14, 0.9, 0.14), DARK_WOOD)
 			kit.xform = Transform3D.IDENTITY
 			if i > 0 and i < n - 1:
-				collider(xf, Vector3(0, 0.7, 0), Vector3(0.3, 1.4, seg.length()))
+				collider(xf, Vector3(0, 0.7, 0), Vector3(0.3, 1.4, seg.length()), true)
 	# supports
 	var cpt: Vector3 = pts[n / 2]
 	if stone:
@@ -569,7 +575,7 @@ func _arch_bridge(center: Vector2, dir: Vector2, half_len: float, width: float, 
 	sh.set_faces(faces)
 	sh.backface_collision = true
 	cs.shape = sh
-	body.add_child(cs)
+	small.add_child(cs)
 
 
 func _fence(points: Array, col := Color(0.55, 0.42, 0.28)) -> void:
@@ -591,7 +597,7 @@ func _fence(points: Array, col := Color(0.55, 0.42, 0.28)) -> void:
 		kit.xform = xf
 		kit.box(Vector3(0, 0.45, 0), Vector3(0.08, 0.1, len), col)
 		kit.box(Vector3(0, 0.9, 0), Vector3(0.08, 0.1, len), col)
-		collider(Transform3D(Basis(Vector3.UP, yaw), Vector3(mid.x, my, mid.y)), Vector3(0, 0.6, 0), Vector3(0.2, 1.4, len))
+		collider(Transform3D(Basis(Vector3.UP, yaw), Vector3(mid.x, my, mid.y)), Vector3(0, 0.6, 0), Vector3(0.2, 1.4, len), true)
 
 
 func _build_fences() -> void:
@@ -671,7 +677,7 @@ func _build_player_hollow() -> void:
 	glow.box(Vector3(0, 0.12, 0), Vector3(0.7, 0.2, 0.7), Color(1.0, 0.55, 0.2))
 	fire_points.append(Vector3(c.x, cy + 0.4, c.y))
 	smoke(Vector3(c.x, cy + 1.5, c.y))
-	cyl_collider(Vector3(c.x, cy, c.y), 1.0, 1.4)
+	cyl_collider(Vector3(c.x, cy, c.y), 1.0, 1.4, true)
 	# lantern on a pole and a sign
 	_troll_lantern(base.x + 4.5, base.z + 3.5)
 	var sxf := place(base.x + 7.0, base.z + 6.0, base.x + 14.0, base.z + 12.0)
@@ -703,7 +709,7 @@ func _troll_lantern(x: float, z: float) -> void:
 	glow.xform = kit.xform
 	glow.box(Vector3(0.75, 1.72, 0), Vector3(0.34, 0.42, 0.34), Color(1.0, 0.8, 0.45))
 	lamp_points.append(Vector3(x + 0.75, y + 1.7, z))
-	cyl_collider(Vector3(x, y, z), 0.25, 2.4)
+	cyl_collider(Vector3(x, y, z), 0.25, 2.4, true)
 
 
 func _build_granny_hut() -> void:
@@ -764,7 +770,7 @@ func _build_stein_circle() -> void:
 		kit.xform = Transform3D(Basis(Vector3.UP, a) * Basis(Vector3.RIGHT, rng.randf_range(-0.08, 0.08)), Vector3(p.x, y, p.y))
 		kit.box(Vector3(0, hgt * 0.5 - 0.2, 0), Vector3(1.0, hgt, 0.7), Color(0.55, 0.54, 0.53))
 		kit.box(Vector3(0, hgt - 0.15, 0), Vector3(1.05, 0.2, 0.75), Color(0.42, 0.55, 0.3))
-		cyl_collider(Vector3(p.x, y, p.y), 0.6, hgt)
+		cyl_collider(Vector3(p.x, y, p.y), 0.6, hgt, true)
 	# cairns
 	for c: Vector2 in [Vector2(-3.0, 2.0), Vector2(2.5, -2.5), Vector2(3.0, 3.0)]:
 		var p2 := s + c
@@ -775,7 +781,7 @@ func _build_stein_circle() -> void:
 			var r := 0.6 - k * 0.1
 			kit.blob(Vector3(0, yy + r * 0.4, 0), Vector3(r, r * 0.45, r * 0.9), Color(0.6, 0.58, 0.56).darkened(0.05 * (k % 2)), 2, 6, 0.1)
 			yy += r * 0.75
-		cyl_collider(Vector3(p2.x, y2, p2.y), 0.5, 2.0)
+		cyl_collider(Vector3(p2.x, y2, p2.y), 0.5, 2.0, true)
 	# Stein's stone seat
 	_big_rock(Vector3(s.x - 1.0, gy(s.x - 1.0, s.y - 3.5) + 0.2, s.y - 3.5), Vector3(1.8, 1.1, 1.4), 62, true)
 	clear_zone(s.x, s.y, 8)
@@ -834,7 +840,7 @@ func _build_troll_ring() -> void:
 		var by := gy(p.x, p.y)
 		kit.xform = Transform3D(Basis(Vector3.UP, a3 + PI * 0.5) * Basis(Vector3.FORWARD, PI * 0.5), Vector3(p.x, by + 0.35, p.y))
 		kit.cylinder(Vector3(0, -1.2, 0), 0.35, 0.35, 2.4, 6, Color(0.45, 0.33, 0.22), Color(0.72, 0.6, 0.42))
-	cyl_collider(Vector3(r.x, y, r.y), 1.4, 0.6)
+	cyl_collider(Vector3(r.x, y, r.y), 1.4, 0.6, true)
 	clear_zone(r.x, r.y, 6)
 
 
@@ -848,7 +854,7 @@ func _build_bonfire() -> void:
 	for i in range(8):
 		var a4 := TAU * (i + 0.5) / 8.0
 		kit.blob(Vector3(sin(a4) * 1.5, 0.12, cos(a4) * 1.5), Vector3(0.35, 0.25, 0.35), STONE, 2, 5, 0.15)
-	cyl_collider(Vector3(b.x, y, b.y), 1.3, 2.0)
+	cyl_collider(Vector3(b.x, y, b.y), 1.3, 2.0, true)
 	clear_zone(b.x, b.y, 6)
 
 

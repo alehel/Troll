@@ -29,6 +29,8 @@ func wait(s: float) -> void:
 func shot(label: String) -> void:
 	if not shots:
 		return
+	main.ui.hud._hint_active = false
+	main.ui.hud.hint_panel.visible = false
 	await RenderingServer.frame_post_draw
 	var img := get_viewport().get_texture().get_image()
 	shot_n += 1

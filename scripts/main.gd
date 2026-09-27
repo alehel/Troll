@@ -70,7 +70,7 @@ func _build_world() -> void:
 	print("World built in %d ms" % (Time.get_ticks_msec() - t0))
 	_on_settings_changed()
 	ui.hide_loading()
-	for test in ["autotest", "walktest", "tour"]:
+	for test in ["autotest", "walktest", "tour", "trailer"]:
 		if OS.get_cmdline_user_args().has("--" + test):
 			var scr: GDScript = load("res://tests/%s.gd" % test)
 			if scr == null or not scr.can_instantiate():

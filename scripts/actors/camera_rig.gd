@@ -17,6 +17,8 @@ var terrain: Terrain
 var override_pose: Array = []
 var _drag := false
 var _cur_dist := 13.0
+## Extra tilt so the player can look up at the sky (radians, positive = look up).
+var tilt := 0.0
 
 
 func _ready() -> void:
@@ -50,6 +52,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			distance_target = clampf(distance_target + 1.0, 7.0, 22.0)
 	elif event is InputEventMouseMotion and _drag:
 		yaw_target -= (event as InputEventMouseMotion).relative.x * 0.008
+		tilt = clampf(tilt + (event as InputEventMouseMotion).relative.y * 0.006, -0.35, 0.95)
 
 
 func _process(delta: float) -> void:
@@ -58,6 +61,13 @@ func _process(delta: float) -> void:
 		yaw_target -= turn * delta * 1.8
 		var z := Input.get_axis("zoom_in", "zoom_out")
 		distance_target = clampf(distance_target + z * delta * 10.0, 7.0, 22.0)
+		var tl := Input.get_axis("tilt_down", "tilt_up")
+		tilt = clampf(tilt + tl * delta * 1.2, -0.35, 0.95)
+		# drift back to the normal view once the troll walks on
+		if absf(tl) < 0.1 and not _drag and target is CharacterBody3D:
+			var v := (target as CharacterBody3D).velocity
+			if Vector2(v.x, v.z).length() > 1.0:
+				tilt = move_toward(tilt, 0.0, delta * 0.6)
 	yaw = lerp_angle(yaw, yaw_target, clampf(delta * 8.0, 0.0, 1.0))
 	distance = lerpf(distance, distance_target, clampf(delta * 6.0, 0.0, 1.0))
 	if target:
@@ -75,7 +85,8 @@ func _update_transform(delta: float) -> void:
 		var goal := cur.looking_at(l, Vector3.UP)
 		cam.global_transform = Transform3D(cur.basis.slerp(goal.basis, clampf(delta * 3.0, 0.0, 1.0)).orthonormalized(), cam.global_position)
 		return
-	pitch = deg_to_rad(lerpf(-22.0, -40.0, clampf((distance - 7.0) / 15.0, 0.0, 1.0)))
+	pitch = deg_to_rad(lerpf(-22.0, -40.0, clampf((distance - 7.0) / 15.0, 0.0, 1.0))) + tilt
+	pitch = clampf(pitch, deg_to_rad(-70.0), deg_to_rad(12.0))
 	var b := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
 	var want := distance
 	# keep the camera out of rocks and buildings
@@ -95,7 +106,12 @@ func _update_transform(delta: float) -> void:
 		if pos.y < g:
 			pos.y = g
 	cam.global_position = pos
-	cam.look_at(focus, Vector3.UP)
+	if tilt > 0.05:
+		# looking up: aim above the troll towards the sky
+		var fwd := Vector3(-sin(yaw), 0, -cos(yaw))
+		cam.look_at(focus + fwd * 6.0 + Vector3(0, tilt * 9.0, 0), Vector3.UP)
+	else:
+		cam.look_at(focus, Vector3.UP)
 
 
 ## Horizontal forward direction of the camera (for camera-relative movement).

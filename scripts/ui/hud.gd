@@ -138,7 +138,7 @@ func _ready() -> void:
 	hint_panel.offset_top = -92
 	hint_panel.offset_bottom = -8
 	add_child(hint_panel)
-	var hl := UiTheme.label("Move: WASD / Arrows / Stick\nRun: Shift   Interact: E / Space\nCamera: Z / C or right-drag\nZoom: mouse wheel\nBag: Tab    Journal: J\nPause: Esc", 9, Color(0.95, 0.92, 0.85))
+	var hl := UiTheme.label("Move: WASD / Arrows / Stick\nRun: Shift   Interact: E / Space\nCamera: Z / C / right-drag\nLook up: R / F   Zoom: wheel\nBag: Tab    Journal: J\nPause: Esc", 9, Color(0.95, 0.92, 0.85))
 	hint_panel.add_child(hl)
 	hint_panel.visible = false
 	Game.notify.connect(add_notification)

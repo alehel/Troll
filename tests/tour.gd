@@ -42,6 +42,7 @@ func _go() -> void:
 			main.ui.dialogue._advance()
 		await wait(0.05)
 		t += 0.05
+	main.ui.hud._hint_active = false
 	main.ui.hud.hint_panel.visible = false
 	# make the villagers friendly so they stay in view
 	for id in NpcDB.humans():

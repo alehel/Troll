@@ -358,9 +358,12 @@ func color_for(x: float, z: float, h: float, ny: float, pw: float, rw: float) ->
 	# high ground
 	if h > 40.0:
 		c = c.lerp(Color(0.55, 0.53, 0.47), sstep(40.0, 52.0, h))
-	# steep rock
+	# steep rock, with horizontal strata and a little moss on the ledges
 	if ny < 0.8:
-		var rock := Color(0.52, 0.5, 0.48) if n2 > 0.45 else Color(0.45, 0.44, 0.43)
+		var band := posmod(int(floor(h / 1.7 + n1 * 1.5)), 3)
+		var rock: Color = [Color(0.53, 0.51, 0.49), Color(0.46, 0.45, 0.44), Color(0.58, 0.55, 0.5)][band]
+		if n2 > 0.72:
+			rock = rock.lerp(Color(0.36, 0.48, 0.27), 0.45)
 		c = c.lerp(rock, sstep(0.8, 0.68, ny))
 	if h > 58.0 + n1 * 18.0 and ny > 0.55:
 		c = Color(0.93, 0.95, 0.98)
