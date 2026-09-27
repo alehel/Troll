@@ -16,13 +16,16 @@ villagers start to wonder whether trolls are so scary after all.
 You can't die or lose. There's no money and no timer. It's just you, your troll
 friends, and a village that needs to get to know you.
 
-![Title screen](docs/screenshots/title.png)
+[![Watch the trailer](docs/screenshots/trailer_thumb.png)](docs/trailer.mp4)
+
+**[▶ Watch the gameplay trailer (1:41)](docs/trailer.mp4)**
 
 | | |
 |---|---|
-| ![Village](docs/screenshots/village_flee.png) | ![Granny Ur](docs/screenshots/granny.png) |
-| ![Morning paper](docs/screenshots/newspaper.png) | ![Festival](docs/screenshots/festival.png) |
-| ![Forest and waterfall river](docs/screenshots/forest.png) | ![Night in Lillevik](docs/screenshots/village_night.png) |
+| ![Villagers fleeing from the troll](docs/screenshots/village_flee.png) | ![Talking with Granny Ur](docs/screenshots/granny.png) |
+| ![The morning paper](docs/screenshots/newspaper.png) | ![The harvest festival](docs/screenshots/festival.png) |
+| ![Bukken the goat follows you home](docs/screenshots/bukken.png) | ![Northern lights over the fjord](docs/screenshots/aurora.png) |
+| ![The waterfall river](docs/screenshots/forest.png) | ![Title screen](docs/screenshots/title.png) |
 
 ## Running the game
 
@@ -45,8 +48,9 @@ templates.
 | Move | WASD / arrow keys | Left stick / D-pad |
 | Run | Shift | RB / B |
 | Interact / talk / continue | E, Space or Enter | A |
-| Rotate camera | Z / C, or drag with the right mouse button | Right stick |
-| Zoom | Mouse wheel, + / - | Right stick up/down |
+| Rotate camera | Z / C, or drag with the right mouse button | Right stick left/right, LB |
+| Tilt camera (look up at the stars) | R / F, Page Up / Page Down, or drag up/down | Right stick up/down |
+| Zoom | Mouse wheel, + / - | |
 | Bag (inventory) | Tab or I | Y |
 | Journal | J | X |
 | Pause menu | Esc | Start |
@@ -147,8 +151,8 @@ scripts/story/          conversations, gifts, sleep & newspaper, festival
 scripts/ui/             HUD, dialogue, bag, journal, cauldron, paper, menus, theme
 scripts/data/           items, icons, NPCs, quests
 shaders/                toon, outline, water, sky, post-process
-tools/                  audio generator, terrain/icon preview scripts
-tests/                  automated playthrough, walkability test, screenshot tour
+tools/                  audio generator, trailer recorder, terrain/icon preview scripts
+tests/                  automated playthrough, walkability test, screenshot tour, trailer
 ```
 
 ### Automated tests
@@ -161,6 +165,16 @@ godot --path . -- --autotest            # plays the whole story and checks every
 godot --path . -- --autotest --shots    # ...and saves screenshots to the user data folder
 godot --path . -- --walktest            # walks the main routes with real input to check they're passable
 godot --path . -- --tour                # screenshots of key places at different times of day
+```
+
+### Recording the trailer
+
+`tests/trailer.gd` is a scripted camera and gameplay sequence. `tools/make_trailer.sh`
+records it with Godot's Movie Maker mode (30 fps, 1280×720) and encodes it to MP4
+with ffmpeg:
+
+```sh
+tools/make_trailer.sh docs/trailer.mp4  # on a headless server: xvfb-run -a tools/make_trailer.sh
 ```
 
 ### Regenerating assets
