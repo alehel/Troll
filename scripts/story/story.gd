@@ -128,6 +128,8 @@ func _talk_flow(npc: NPC) -> void:
 	if not did:
 		did = await _quest_offer(npc, stage)
 	if not did:
+		did = await _mention_request(npc, stage)
+	if not did:
 		if human:
 			if stage == 1:
 				await say(npc, NpcDB.pick(npc.data.get("scared", ["..."])))
@@ -141,11 +143,17 @@ func _talk_flow(npc: NPC) -> void:
 		if not (human and stage <= 1):
 			opts.append("Chat")
 		opts.append("Give a gift")
+		var req := Game.request_for(id)
+		if not req.is_empty() and Game.count(req["item"]) >= int(req["n"]) and not (human and stage <= 1):
+			opts.push_front("Deliver " + ItemDB.count_name(req["item"], int(req["n"])))
 		if not human and Game.is_active("m8_festival") and Game.quest_step("m8_festival") == 0 and not Game.has_flag("invited_" + id):
 			opts.append("Invite to the festival")
 		opts.append("Goodbye")
 		var c: int = await ui.choose(opts)
 		var pick: String = opts[c] if c >= 0 else "Goodbye"
+		if pick.begins_with("Deliver "):
+			await _deliver_request(npc)
+			continue
 		match pick:
 			"Chat":
 				await _chat(npc, stage)
@@ -209,6 +217,48 @@ func _quest_offer(npc: NPC, stage: int) -> bool:
 			update_tussa()
 		return true
 	return false
+
+
+const ASK_LINES := [
+	"Oh, {name}! Could you bring me {items} today? I'd be ever so grateful.",
+	"I've been dreaming of {items}. You wouldn't happen to find some, would you?",
+	"If you come across {items}, would you bring them by? Only if it's no trouble!",
+]
+const THANK_LINES := [
+	"Oh, wonderful! Thank you, {name}!",
+	"Perfect! Just what I needed. You're a treasure.",
+	"You remembered! Here, take this as a thank you.",
+]
+
+
+func _mention_request(npc: NPC, stage: int) -> bool:
+	var req := Game.request_for(npc.id)
+	if req.is_empty() or req["asked"] or (npc.is_human and stage < 3):
+		return false
+	req["asked"] = true
+	var line: String = NpcDB.pick(ASK_LINES).replace("{items}", ItemDB.count_name(req["item"], int(req["n"])))
+	await say(npc, line)
+	Game.emit_signal("notify", "Favour: " + Game.request_text(req), req["item"])
+	Game.emit_signal("quest_changed", "")
+	return true
+
+
+func _deliver_request(npc: NPC) -> void:
+	var req := Game.request_for(npc.id)
+	if req.is_empty() or not Game.remove_item(req["item"], int(req["n"])):
+		return
+	req["done"] = true
+	Game.inc("favours")
+	await say(npc, NpcDB.pick(THANK_LINES))
+	var reward: String = npc.data.get("treat", Game.TROLL_REWARDS.get(npc.id, "pretty_stone"))
+	Game.add_item(reward)
+	if npc.is_human:
+		Game.add_trust(npc.id, 7.0)
+	else:
+		Game.add_friendship(npc.id, 7.0)
+	Sound.sfx("gift")
+	world.spawn_puff(npc.global_position + Vector3(0, npc.model.height + 0.3, 0), Color(1.0, 0.45, 0.55))
+	Game.emit_signal("quest_changed", "")
 
 
 func _chat(npc: NPC, stage: int) -> void:
@@ -321,6 +371,9 @@ func read_notice_board() -> void:
 		"* \"Harvest Festival this autumn on the beach. Bring lanterns! - The Council\"",
 		"* \"Found: one very small mitten. Ask at the shop.\"",
 	]))
+	for r in Game.requests:
+		if not r["done"]:
+			lines.append("* A note: \"%s\"" % Game.request_text(r))
 	lines.append("* (Village mood: %s)" % Game.village_mood_name())
 	await narrate(lines)
 

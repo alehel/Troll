@@ -70,11 +70,17 @@ func _build_world() -> void:
 	print("World built in %d ms" % (Time.get_ticks_msec() - t0))
 	_on_settings_changed()
 	ui.hide_loading()
-	if OS.get_cmdline_user_args().has("--autotest"):
-		var t: Node = load("res://tests/autotest.gd").new()
-		add_child(t)
-		t.run(self)
-		return
+	for test in ["autotest", "walktest", "tour"]:
+		if OS.get_cmdline_user_args().has("--" + test):
+			var scr: GDScript = load("res://tests/%s.gd" % test)
+			if scr == null or not scr.can_instantiate():
+				push_error("Could not load test " + test)
+				get_tree().quit(2)
+				return
+			var t: Node = scr.new()
+			add_child(t)
+			t.run(self)
+			return
 	show_title()
 
 

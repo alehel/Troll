@@ -32,6 +32,7 @@ func _ready() -> void:
 	hud = Hud.new()
 	root.add_child(hud)
 	dialogue = DialogueBox.new()
+	dialogue.name = "DialogueBox"
 	root.add_child(dialogue)
 	items = ItemMenu.new()
 	root.add_child(items)

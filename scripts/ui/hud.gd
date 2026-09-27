@@ -19,6 +19,9 @@ var notif_box: VBoxContainer
 var bark_layer: Control
 var marker: Label
 var hint_panel: PanelContainer
+var goal_marker: TextureRect
+var goal_arrow: TextureRect
+var goal_dist: Label
 var _barks: Array = [] # [{target, panel, time}]
 var _focus: Interactable
 var _t := 0.0
@@ -36,6 +39,18 @@ func _ready() -> void:
 	marker.add_theme_constant_override("outline_size", 4)
 	marker.visible = false
 	add_child(marker)
+	goal_marker = UiTheme.icon("marker", 16)
+	goal_marker.visible = false
+	add_child(goal_marker)
+	goal_arrow = UiTheme.icon("arrow", 16)
+	goal_arrow.pivot_offset = Vector2(8, 8)
+	goal_arrow.visible = false
+	add_child(goal_arrow)
+	goal_dist = UiTheme.label("", 9, Color(1.0, 0.95, 0.7), true)
+	goal_dist.add_theme_color_override("font_outline_color", UiTheme.BORDER)
+	goal_dist.add_theme_constant_override("outline_size", 4)
+	goal_dist.visible = false
+	add_child(goal_dist)
 	# clock
 	var clock := UiTheme.panel()
 	clock.position = Vector2(6, 6)
@@ -116,10 +131,12 @@ func _ready() -> void:
 	hint_panel = UiTheme.panel(Color(0.13, 0.12, 0.16, 0.85), Color(0.05, 0.04, 0.05))
 	hint_panel.anchor_left = 1.0
 	hint_panel.anchor_right = 1.0
+	hint_panel.anchor_top = 1.0
+	hint_panel.anchor_bottom = 1.0
 	hint_panel.offset_left = -170
 	hint_panel.offset_right = -6
-	hint_panel.offset_top = 44
-	hint_panel.offset_bottom = 120
+	hint_panel.offset_top = -92
+	hint_panel.offset_bottom = -8
 	add_child(hint_panel)
 	var hl := UiTheme.label("Move: WASD / Arrows / Stick\nRun: Shift   Interact: E / Space\nCamera: Z / C or right-drag\nZoom: mouse wheel\nBag: Tab    Journal: J\nPause: Esc", 9, Color(0.95, 0.92, 0.85))
 	hint_panel.add_child(hl)
@@ -128,13 +145,19 @@ func _ready() -> void:
 	refresh()
 
 
-func show_controls_hint(seconds := 22.0) -> void:
+var _hint_active := false
+
+
+func show_controls_hint(seconds := 24.0) -> void:
+	_hint_active = true
 	hint_panel.visible = true
 	hint_panel.modulate.a = 1.0
 	var tw := create_tween()
 	tw.tween_interval(seconds)
 	tw.tween_property(hint_panel, "modulate:a", 0.0, 1.5)
-	tw.tween_callback(func(): hint_panel.visible = false)
+	tw.tween_callback(func():
+		_hint_active = false
+		hint_panel.visible = false)
 
 
 func refresh() -> void:
@@ -205,6 +228,54 @@ func add_bark(target: Node3D, text: String, seconds: float) -> void:
 	_barks.append({"target": target, "panel": p, "time": seconds})
 
 
+func _update_goal() -> void:
+	goal_marker.visible = false
+	goal_arrow.visible = false
+	goal_dist.visible = false
+	if world == null or not Game.playing or world.is_cutscene() or not visible:
+		return
+	var tgt: Variant = world.objective_target()
+	if tgt == null:
+		return
+	var p: Vector3 = tgt
+	var dist := p.distance_to(world.player.global_position)
+	if dist < 3.0:
+		return
+	var cam := world.rig.cam
+	var cs := get_viewport_rect().size
+	var margin := 18.0
+	var sp: Variant = _project(p + Vector3(0, 0.8, 0))
+	var bob := 2.0 if fmod(_t, 0.9) < 0.45 else 0.0
+	if sp != null:
+		var q: Vector2 = sp
+		if q.x > margin and q.x < cs.x - margin and q.y > margin + 30 and q.y < cs.y - margin:
+			goal_marker.visible = true
+			goal_marker.position = (q - Vector2(8, 16 + bob)).round()
+			if dist > 12.0:
+				goal_dist.visible = true
+				goal_dist.text = "%dm" % int(dist)
+				goal_dist.position = (q + Vector2(-8, 1)).round()
+			return
+	# off-screen: arrow on the screen edge pointing towards the goal
+	var local := cam.global_transform.affine_inverse() * p
+	var dir2 := Vector2(local.x, -local.y)
+	if local.z > 0.0:
+		dir2 = Vector2(local.x, 0.0) if absf(local.x) > 0.01 else Vector2(0, 1)
+	if dir2.length() < 0.001:
+		dir2 = Vector2(0, 1)
+	dir2 = dir2.normalized()
+	var center := cs * 0.5
+	var half := center - Vector2(margin + 8, margin + 8)
+	var k := minf(absf(half.x / maxf(absf(dir2.x), 0.001)), absf(half.y / maxf(absf(dir2.y), 0.001)))
+	var pos := center + dir2 * k
+	goal_arrow.visible = true
+	goal_arrow.position = (pos - Vector2(8, 8)).round()
+	goal_arrow.rotation = dir2.angle()
+	goal_dist.visible = true
+	goal_dist.text = "%dm" % int(dist)
+	goal_dist.position = (pos - dir2 * 16.0 - Vector2(8, 5)).round()
+
+
 func _project(p: Vector3) -> Variant:
 	if world == null or world.rig == null or sub_viewport == null:
 		return null
@@ -219,6 +290,9 @@ func _project(p: Vector3) -> Variant:
 
 func _process(delta: float) -> void:
 	_t += delta
+	if _hint_active:
+		var dlg := get_parent().get_node_or_null("DialogueBox")
+		hint_panel.visible = dlg == null or not (dlg as Control).visible
 	clock_label.text = Game.clock_text()
 	day_label.text = "Day %d  %s" % [Game.day, Game.weekday_name().substr(0, 3)]
 	time_icon.texture = Icons.get_texture("moon" if Game.is_night() else "sun")
@@ -247,6 +321,7 @@ func _process(delta: float) -> void:
 		var pos: Vector2 = sp
 		panel.position = (pos - Vector2(panel.size.x * 0.5, panel.size.y + 2)).round()
 		panel.modulate.a = clampf(b["time"] * 3.0, 0.0, 1.0)
+	_update_goal()
 	# focus marker
 	if _focus != null and is_instance_valid(_focus):
 		var fp: Variant = _project(_focus.focus_point() + Vector3(0, 0.6, 0))

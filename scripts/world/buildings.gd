@@ -22,12 +22,14 @@ var body: StaticBody3D
 var houses := {}
 var smoke_points: Array = []
 var smoke_nodes: Array = []
+## Bridge decks: [{a, dir, len, width, pts}]
+var bridges: Array = []
 var lamp_points: Array = []
 var fire_points: Array = []
 var window_material: ShaderMaterial
 const DOCK_X := 9.0
-const DOCK_Z0 := 63.5
-const DOCK_Z1 := 83.0
+const DOCK_Z0 := 69.0
+const DOCK_Z1 := 85.5
 var dock_y := 1.0
 var lamp_material: ShaderMaterial
 ## Circles (x, z, r) where vegetation should not grow.
@@ -380,7 +382,7 @@ func _build_village_props() -> void:
 		kit.blob(Vector3(-0.7 + i * 0.45, 0.95, 0.05), Vector3(0.18, 0.12, 0.18), Color(0.82, 0.58, 0.3), 2, 6)
 	collider(sxf, Vector3(0, 0.5, 0), Vector3(2.0, 1.0, 1.0))
 	# lamp posts
-	for lp in [Vector2(-4, 38), Vector2(5, 50), Vector2(-9, 45), Vector2(9, 45), Vector2(6, 61), Vector2(-26, 44.5), Vector2(22, 48), Vector2(-7, 58)]:
+	for lp in [Vector2(-2.5, 38.5), Vector2(6.5, 48.8), Vector2(-9, 46.8), Vector2(9, 48.2), Vector2(5.2, 62.5), Vector2(-26, 45.6), Vector2(22, 49.2), Vector2(-7, 58)]:
 		_lamp_post(lp.x, lp.y)
 	# flower boxes & barrels scattered
 	for fb in [Vector2(-12, 32), Vector2(13, 31), Vector2(-3, 20), Vector2(4, 20)]:
@@ -417,7 +419,7 @@ func _build_dock() -> void:
 	zz = z0 + 1.0
 	while zz < z1:
 		for sx in [-1.25, 1.25]:
-			kit.cylinder(Vector3(x + sx, -4.0, zz), 0.14, 0.14, 5.3, 5, DARK_WOOD)
+			kit.cylinder(Vector3(x + sx, -4.0, zz), 0.14, 0.14, deck_y + 4.0, 5, DARK_WOOD)
 		zz += 3.2
 	var c := CollisionShape3D.new()
 	var sh := BoxShape3D.new()
@@ -429,9 +431,9 @@ func _build_dock() -> void:
 	for sx in [-1.35, 1.35]:
 		var cw := CollisionShape3D.new()
 		var sw := BoxShape3D.new()
-		sw.size = Vector3(0.1, 2.0, z1 - z0 - 2.0)
+		sw.size = Vector3(0.1, 2.0, z1 - z0 - 5.0)
 		cw.shape = sw
-		cw.position = Vector3(x + sx, deck_y + 1.0, (z0 + z1) * 0.5 + 1.0)
+		cw.position = Vector3(x + sx, deck_y + 1.0, (z0 + z1) * 0.5 + 2.5)
 		body.add_child(cw)
 	var ce := CollisionShape3D.new()
 	var se := BoxShape3D.new()
@@ -440,8 +442,8 @@ func _build_dock() -> void:
 	ce.position = Vector3(x, deck_y + 1.0, z1 + 0.05)
 	body.add_child(ce)
 	# a rowboat and Ole's fishing boat
-	_boat(Transform3D(Basis(Vector3.UP, 0.1), Vector3(x + 2.8, 0.15, 72.0)), 4.2, Color(0.85, 0.85, 0.8), Color(0.25, 0.45, 0.6))
-	_boat(Transform3D(Basis(Vector3.UP, -0.2), Vector3(x - 3.2, 0.2, 78.0)), 6.0, Color(0.9, 0.9, 0.86), Color(0.7, 0.2, 0.18))
+	_boat(Transform3D(Basis(Vector3.UP, 0.1), Vector3(x + 2.8, 0.15, 80.5)), 4.2, Color(0.85, 0.85, 0.8), Color(0.25, 0.45, 0.6))
+	_boat(Transform3D(Basis(Vector3.UP, -0.2), Vector3(x - 3.4, 0.2, 84.0)), 6.0, Color(0.9, 0.9, 0.86), Color(0.7, 0.2, 0.18))
 
 
 func _boat(xf: Transform3D, length: float, hull: Color, stripe: Color) -> void:
@@ -474,39 +476,100 @@ func _boat(xf: Transform3D, length: float, hull: Color, stripe: Color) -> void:
 
 
 func _build_bridges() -> void:
-	# village bridge on the east road
-	var y := 3.5
-	kit.xform = Transform3D(Basis(Vector3.UP, deg_to_rad(-8.0)), Vector3(48.0, y, 42.2))
-	kit.box(Vector3(0, 0, 0), Vector3(17.0, 0.3, 4.2), WOOD)
-	for i in range(-8, 9, 2):
-		kit.box(Vector3(i, 0.2, 0), Vector3(0.4, 0.06, 4.3), WOOD.darkened(0.1))
-	for sz in [-2.0, 2.0]:
-		kit.box(Vector3(0, 0.8, sz), Vector3(11.0, 0.12, 0.12), DARK_WOOD)
-		for i in range(-5, 6, 2):
-			kit.box(Vector3(i, 0.45, sz), Vector3(0.14, 0.9, 0.14), DARK_WOOD)
-	kit.box(Vector3(0, -1.4, 0), Vector3(0.6, 2.6, 4.0), STONE)
-	var xf := kit.xform
-	collider(xf, Vector3(0, -0.1, 0), Vector3(17.0, 0.4, 4.2))
-	collider(xf, Vector3(0, 0.8, 2.1), Vector3(11.0, 1.6, 0.2))
-	collider(xf, Vector3(0, 0.8, -2.1), Vector3(11.0, 1.6, 0.2))
-	# the old stone troll bridge up in the forest
-	var ty := 9.55
-	kit.xform = Transform3D(Basis(Vector3.UP, deg_to_rad(-9.0)), Vector3(34.0, ty, -12.2))
-	kit.box(Vector3(0, -0.3, 0), Vector3(16.0, 0.8, 3.6), STONE)
-	for i in range(-7, 8):
-		kit.box(Vector3(i, 0.12, 0), Vector3(0.9, 0.08, 3.4), STONE.lightened(0.05 * (i % 2)))
-	for sz in [-1.8, 1.8]:
-		for i in range(-5, 6):
-			kit.box(Vector3(i * 1.0, 0.45 + 0.05 * (i % 2), sz), Vector3(0.95, 0.7 + 0.1 * ((i + 7) % 3), 0.45), STONE.darkened(0.05 + 0.04 * ((i + 5) % 2)))
-	# arch
-	kit.box(Vector3(-4.5, -2.0, 0), Vector3(2.0, 3.0, 3.4), STONE.darkened(0.08))
-	kit.box(Vector3(4.5, -2.0, 0), Vector3(2.0, 3.0, 3.4), STONE.darkened(0.08))
-	kit.blob(Vector3(-2.0, 0.9, 1.9), Vector3(0.6, 0.3, 0.3), Color(0.4, 0.55, 0.26), 2, 5)
-	kit.blob(Vector3(3.0, 0.9, -1.9), Vector3(0.6, 0.3, 0.3), Color(0.4, 0.55, 0.26), 2, 5)
-	var txf := kit.xform
-	collider(txf, Vector3(0, -0.3, 0), Vector3(16.0, 0.8, 3.6))
-	collider(txf, Vector3(0, 0.8, 1.9), Vector3(11.0, 1.4, 0.4))
-	collider(txf, Vector3(0, 0.8, -1.9), Vector3(11.0, 1.4, 0.4))
+	# village bridge on the east road (wooden) and the old troll bridge (stone)
+	_arch_bridge(Vector2(48.0, 42.4), Vector2(1.0, -0.08), 10.5, 4.0, false)
+	_arch_bridge(Vector2(34.0, -12.2), Vector2(1.0, -0.16), 10.5, 3.4, true)
+
+
+## Deck height on a bridge at (x, z), or NAN when not on a bridge.
+func bridge_height(x: float, z: float) -> float:
+	for b in bridges:
+		var a: Vector2 = b["a"]
+		var d: Vector2 = b["dir"]
+		var rel := Vector2(x, z) - a
+		var along := rel.dot(d)
+		var across := absf(rel.dot(Vector2(-d.y, d.x)))
+		var len: float = b["len"]
+		if along >= 0.0 and along <= len and across <= b["width"] * 0.5:
+			var pts: Array = b["pts"]
+			var f := along / len * (pts.size() - 1)
+			var k := clampi(int(f), 0, pts.size() - 2)
+			return lerpf((pts[k] as Vector3).y, (pts[k + 1] as Vector3).y, f - k)
+	return NAN
+
+
+func _arch_bridge(center: Vector2, dir: Vector2, half_len: float, width: float, stone: bool) -> void:
+	dir = dir.normalized()
+	var side := Vector2(-dir.y, dir.x)
+	var side3 := Vector3(side.x, 0, side.y)
+	var a := center - dir * half_len
+	var b := center + dir * half_len
+	var ha := terrain.height_at(a.x, a.y) + 0.03
+	var hb := terrain.height_at(b.x, b.y) + 0.03
+	var wl := terrain.water_level_at(center.x, center.y)
+	var mid := (ha + hb) * 0.5
+	var peak := maxf(maxf(ha, hb) + 0.45, wl + 1.3)
+	var bump := peak - mid
+	var n := 18
+	var pts: Array = []
+	for i in range(n + 1):
+		var t := float(i) / n
+		var p := a.lerp(b, t)
+		pts.append(Vector3(p.x, lerpf(ha, hb, t) + bump * sin(PI * t), p.y))
+	bridges.append({"a": a, "dir": dir, "len": half_len * 2.0, "width": width, "pts": pts})
+	var faces := PackedVector3Array()
+	var hw := width * 0.5
+	var down := Vector3(0, -0.4, 0)
+	var deck := STONE.lightened(0.05) if stone else WOOD
+	kit.xform = Transform3D.IDENTITY
+	for i in range(n):
+		var p0: Vector3 = pts[i]
+		var p1: Vector3 = pts[i + 1]
+		var l0 := p0 - side3 * hw
+		var r0 := p0 + side3 * hw
+		var l1 := p1 - side3 * hw
+		var r1 := p1 + side3 * hw
+		var c := deck.darkened(0.06 * (i % 2))
+		kit.quad(l0, l1, r1, r0, c)
+		kit.quad(r0, r1, r1 + down, r0 + down, c.darkened(0.2))
+		kit.quad(l1, l0, l0 + down, l1 + down, c.darkened(0.2))
+		kit.quad(l0 + down, r0 + down, r1 + down, l1 + down, c.darkened(0.4))
+		faces.append_array([l0, l1, r1, l0, r1, r0])
+		# railings / parapets
+		var seg := p1 - p0
+		var basis := Basis.looking_at(seg.normalized(), Vector3.UP)
+		for sgn: float in [-1.0, 1.0]:
+			var m := (p0 + p1) * 0.5 + side3 * (hw - 0.15) * sgn
+			var xf := Transform3D(basis, m)
+			kit.xform = xf
+			if stone:
+				kit.box(Vector3(0, 0.3, 0), Vector3(0.4, 0.6 + 0.08 * ((i + (1 if sgn > 0 else 0)) % 2), seg.length() + 0.04), STONE.darkened(0.04 * ((i + 1) % 2)))
+			else:
+				kit.box(Vector3(0, 0.85, 0), Vector3(0.12, 0.12, seg.length() + 0.02), DARK_WOOD)
+				kit.box(Vector3(0, 0.45, 0), Vector3(0.14, 0.9, 0.14), DARK_WOOD)
+			kit.xform = Transform3D.IDENTITY
+			if i > 0 and i < n - 1:
+				collider(xf, Vector3(0, 0.7, 0), Vector3(0.3, 1.4, seg.length()))
+	# supports
+	var cpt: Vector3 = pts[n / 2]
+	if stone:
+		for off: float in [-0.3, 0.3]:
+			var q: Vector3 = pts[int(n * (0.5 + off))]
+			kit.box(Vector3(q.x, (q.y + terrain.height_at(q.x, q.z)) * 0.5 - 0.5, q.z), Vector3(1.6, maxf(0.5, q.y - terrain.height_at(q.x, q.z) + 0.5), width), STONE.darkened(0.1))
+		kit.blob(cpt + side3 * (hw + 0.1) + Vector3(0, 0.55, 0), Vector3(0.5, 0.25, 0.3), Color(0.4, 0.55, 0.26), 2, 5)
+	else:
+		for off: float in [-0.25, 0.25]:
+			var q2: Vector3 = pts[int(n * (0.5 + off))]
+			for sgn2: float in [-1.0, 1.0]:
+				var pp := q2 + side3 * (hw - 0.3) * sgn2
+				var g := terrain.height_at(pp.x, pp.z) - 1.0
+				kit.cylinder(Vector3(pp.x, g, pp.z), 0.16, 0.16, pp.y - g, 5, DARK_WOOD)
+	var cs := CollisionShape3D.new()
+	var sh := ConcavePolygonShape3D.new()
+	sh.set_faces(faces)
+	sh.backface_collision = true
+	cs.shape = sh
+	body.add_child(cs)
 
 
 func _fence(points: Array, col := Color(0.55, 0.42, 0.28)) -> void:

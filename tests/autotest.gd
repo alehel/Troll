@@ -234,9 +234,18 @@ func _play() -> void:
 	var home: Vector2 = Layout.ANCHORS["home"]
 	await teleport(home.x + 4, home.y + 5)
 	await wait(1.0)
+	check(not ui.hud.prompt_panel.visible, "no stale interaction prompt")
 	await shot("night_home")
 	await sleep_night("newspaper_day2")
 	check(Game.day == 2, "day 2")
+	check(Game.requests.size() >= 1, "a favour was requested")
+	if Game.requests.size() >= 1:
+		var r: Dictionary = Game.requests[0]
+		Game.add_item(r["item"], int(r["n"]))
+		var label := "Deliver " + ItemDB.count_name(r["item"], int(r["n"]))
+		var before := Game.inventory.duplicate()
+		await talk(r["npc"], [label])
+		check(r["done"], "favour delivered to " + String(r["npc"]))
 	check(Game.is_done("m3_secret") and Game.is_active("m4_strength"), "m3 done, m4 active")
 	# --- side: Lyng
 	await talk("lyng")

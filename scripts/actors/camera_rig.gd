@@ -8,8 +8,8 @@ var cam: Camera3D
 var yaw := 0.0
 var yaw_target := 0.0
 var pitch := deg_to_rad(-36.0)
-var distance := 13.0
-var distance_target := 13.0
+var distance := 12.0
+var distance_target := 12.0
 var focus := Vector3.ZERO
 var enabled_input := true
 var terrain: Terrain
@@ -30,7 +30,7 @@ func _ready() -> void:
 
 func snap() -> void:
 	if target:
-		focus = target.global_position + Vector3(0, 1.3, 0)
+		focus = target.global_position + Vector3(0, 1.6, 0)
 	yaw = yaw_target
 	distance = distance_target
 	_cur_dist = distance
@@ -61,7 +61,7 @@ func _process(delta: float) -> void:
 	yaw = lerp_angle(yaw, yaw_target, clampf(delta * 8.0, 0.0, 1.0))
 	distance = lerpf(distance, distance_target, clampf(delta * 6.0, 0.0, 1.0))
 	if target:
-		var want := target.global_position + Vector3(0, 1.3, 0)
+		var want := target.global_position + Vector3(0, 1.6, 0)
 		focus = focus.lerp(want, clampf(delta * 7.0, 0.0, 1.0))
 	_update_transform(delta)
 
@@ -75,6 +75,7 @@ func _update_transform(delta: float) -> void:
 		var goal := cur.looking_at(l, Vector3.UP)
 		cam.global_transform = Transform3D(cur.basis.slerp(goal.basis, clampf(delta * 3.0, 0.0, 1.0)).orthonormalized(), cam.global_position)
 		return
+	pitch = deg_to_rad(lerpf(-22.0, -40.0, clampf((distance - 7.0) / 15.0, 0.0, 1.0)))
 	var b := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, pitch)
 	var want := distance
 	# keep the camera out of rocks and buildings

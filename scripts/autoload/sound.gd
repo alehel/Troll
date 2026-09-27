@@ -14,6 +14,9 @@ var _music_a: AudioStreamPlayer
 var _music_b: AudioStreamPlayer
 var _current_music := ""
 var _check := 0.0
+var _amb := {}
+var _river_amount := 0.0
+var _night_amount := 0.0
 
 
 func _ready() -> void:
@@ -45,6 +48,19 @@ func _ready() -> void:
 	_music_b = AudioStreamPlayer.new()
 	_music_b.bus = "Music"
 	add_child(_music_b)
+	for a in ["day", "night", "river"]:
+		var path := "res://assets/audio/amb_%s.ogg" % a
+		if ResourceLoader.exists(path):
+			var st: AudioStream = load(path)
+			if st is AudioStreamOggVorbis:
+				(st as AudioStreamOggVorbis).loop = true
+			var ap := AudioStreamPlayer.new()
+			ap.bus = "SFX"
+			ap.stream = st
+			ap.volume_db = -60.0
+			add_child(ap)
+			ap.play()
+			_amb[a] = ap
 	apply_volumes()
 
 
@@ -123,7 +139,27 @@ func update_music() -> void:
 		play_music("day")
 
 
+## 0..1 how close the listener is to running water.
+func set_river_amount(v: float) -> void:
+	_river_amount = clampf(v, 0.0, 1.0)
+
+
+func set_night_amount(v: float) -> void:
+	_night_amount = clampf(v, 0.0, 1.0)
+
+
+func _amb_level(key: String, v: float, base_db: float, delta: float) -> void:
+	if not _amb.has(key):
+		return
+	var p: AudioStreamPlayer = _amb[key]
+	var target := base_db + linear_to_db(maxf(v, 0.0005))
+	p.volume_db = lerpf(p.volume_db, target, clampf(delta * 1.5, 0.0, 1.0))
+
+
 func _process(delta: float) -> void:
+	_amb_level("day", 1.0 - _night_amount, -19.0, delta)
+	_amb_level("night", _night_amount, -17.0, delta)
+	_amb_level("river", _river_amount, -13.0, delta)
 	_check -= delta
 	if _check <= 0.0:
 		_check = 4.0

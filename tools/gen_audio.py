@@ -329,6 +329,86 @@ def festival_theme():
     return loopify(buf, length, 0.18, 0.75)
 
 
+# ---------------------------------------------------------------- ambience
+def seamless(x, length_s, fade_s=1.5):
+    """Crossfade the tail over the head so the loop is seamless."""
+    L = int(length_s * SR)
+    F = int(fade_s * SR)
+    out = x[:L].copy()
+    w = np.linspace(0.0, 1.0, F)
+    out[:F] = out[:F] * w + x[L:L + F] * (1.0 - w)
+    return out
+
+
+def wind(dur, level=0.25):
+    n = noise(dur)
+    t = t_axis(dur)
+    mod = 0.6 + 0.4 * np.sin(2 * np.pi * 0.07 * t) * np.sin(2 * np.pi * 0.023 * t + 1.0)
+    return lowpass(n, 380, 2) * mod * level
+
+
+def bird_chirp(kind):
+    if kind == 0:  # quick rising tweet
+        d = 0.09
+        t = t_axis(d)
+        f = 2800 + 1600 * t / d
+    elif kind == 1:  # falling whistle
+        d = 0.22
+        t = t_axis(d)
+        f = 3600 - 1200 * t / d
+    else:  # trill
+        d = 0.3
+        t = t_axis(d)
+        f = 3200 + 400 * np.sin(2 * np.pi * 28 * t)
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    return np.sin(ph) * env_adsr(len(t), 0.01, 0.03, 0.7, 0.04) * 0.25
+
+
+def ambience_day():
+    dur = 34.0
+    buf = wind(dur + 2, 0.5)
+    tt = 0.5
+    while tt < dur:
+        kind = int(rng.integers(0, 3))
+        reps = int(rng.integers(1, 4))
+        for r in range(reps):
+            place(buf, bird_chirp(kind), tt + r * 0.16, rng.uniform(0.15, 0.5))
+        tt += rng.uniform(1.2, 4.0)
+    return seamless(reverb(buf, 0.3, 0.8), dur)
+
+
+def ambience_night():
+    dur = 30.0
+    buf = wind(dur + 2, 0.35)
+    for c in range(3):
+        f = 4200 + c * 350
+        rate = 14 + c * 3
+        t0 = rng.uniform(0, 1)
+        tt = t0
+        while tt < dur:
+            chirps = int(rng.integers(3, 7))
+            for k in range(chirps):
+                d = 0.035
+                t = t_axis(d)
+                place(buf, np.sin(2 * np.pi * f * t) * np.sin(np.pi * t / d) * 0.06, tt + k / rate, 1.0)
+            tt += rng.uniform(0.8, 2.2)
+    # an owl, far away
+    t = t_axis(0.5)
+    hoot = np.sin(2 * np.pi * (380 - 40 * t) * t) * env_adsr(len(t), 0.05, 0.1, 0.8, 0.2) * 0.12
+    place(buf, hoot, 12.0, 1.0)
+    place(buf, hoot, 12.7, 0.8)
+    return seamless(reverb(buf, 0.35, 0.85), dur)
+
+
+def river_loop():
+    dur = 12.0
+    n = noise(dur + 2)
+    t = t_axis(dur + 2)
+    burble = bandpass(n, 300, 2500) * (0.6 + 0.4 * np.abs(np.sin(2 * np.pi * 3.1 * t) * np.sin(2 * np.pi * 1.7 * t + 0.5)))
+    hiss = bandpass(noise(dur + 2), 2500, 7000) * 0.25
+    return seamless(burble + hiss, dur, 1.0)
+
+
 # ---------------------------------------------------------------- effects
 def formant_voice(f0_curve, dur, formants, vib=0.0, vib_rate=6.0, breath=0.05):
     t = t_axis(dur)
@@ -413,6 +493,10 @@ def main():
         write_ogg("music_day.ogg", day_theme())
         write_ogg("music_night.ogg", night_theme())
         write_ogg("music_festival.ogg", festival_theme())
+    if not only or "ambience" in only:
+        write_ogg("amb_day.ogg", ambience_day())
+        write_ogg("amb_night.ogg", ambience_night())
+        write_ogg("amb_river.ogg", river_loop())
     if not only or "sfx" in only:
         for name, x in sfx_all().items():
             write_wav("sfx_%s.wav" % name, x, 0.5 if name in ("blip", "ui_move", "step") else 0.8)

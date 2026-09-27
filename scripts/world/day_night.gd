@@ -123,6 +123,12 @@ func update(minutes: float) -> void:
 	env.ambient_light_color = k[5]
 	env.ambient_light_energy = k[6]
 	env.fog_light_color = (k[2] as Color).lerp(k[1], 0.25)
+	# soft morning mist over the fjord and valley
+	var hm := fmod(h, 24.0)
+	var mist := 0.0
+	if hm > 5.0 and hm < 10.0:
+		mist = sin((hm - 5.0) / 5.0 * PI)
+	env.fog_density = 0.0042 + mist * 0.0045
 	sky_mat.set_shader_parameter("top_color", k[1])
 	sky_mat.set_shader_parameter("horizon_color", k[2])
 	sky_mat.set_shader_parameter("ground_color", (k[2] as Color).darkened(0.3))

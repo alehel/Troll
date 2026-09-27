@@ -85,7 +85,7 @@ func build() -> void:
 	clear.append(Vector3(72, 46, 9)) # rockslide
 	clear.append(Vector3(48, 42, 9)) # village bridge
 	clear.append(Vector3(34, -12, 9)) # troll bridge
-	clear.append(Vector3(9, 72, 10)) # dock
+	clear.append(Vector3(9, 76, 10)) # dock
 	var kt: Vector2 = Layout.ANCHORS["kite_tree"]
 	clear.append(Vector3(kt.x, kt.y, 3.5))
 	for s in TUSSA_SPOTS:
@@ -102,6 +102,10 @@ func build() -> void:
 	daynight.name = "DayNight"
 	add_child(daynight)
 	daynight.build(buildings)
+	var life := AmbientLife.new()
+	life.name = "AmbientLife"
+	add_child(life)
+	life.build(terrain)
 	_build_nav()
 	_invisible_walls()
 	_spawn_objects()
@@ -509,6 +513,9 @@ func start_day() -> void:
 # --------------------------------------------------------------------------
 func ground_height(x: float, z: float) -> float:
 	var h := terrain.height_at(x, z)
+	var bh := buildings.bridge_height(x, z)
+	if not is_nan(bh):
+		h = maxf(h, bh)
 	if absf(x - Buildings.DOCK_X) < 1.3 and z > Buildings.DOCK_Z0 and z < Buildings.DOCK_Z1:
 		h = maxf(h, buildings.dock_y + 0.06)
 	return h
@@ -561,6 +568,75 @@ func is_free_spot(x: float, z: float) -> bool:
 	if not hits.is_empty():
 		return false
 	return water_depth_at(Vector3(x, ground_height(x, z), z)) < 0.1
+
+
+## World position of the current objective (or null).
+func objective_target() -> Variant:
+	var act := Game.active_quests()
+	var where := ""
+	if act.is_empty():
+		for r in Game.requests:
+			if not r["done"]:
+				where = "npc:" + String(r["npc"])
+				break
+	else:
+		# prefer the first quest step that points somewhere
+		for qid in act:
+			var step := Game.current_step(qid)
+			where = step.get("where", "")
+			if where == "" and step.has("talk"):
+				where = "npc:" + String(step["talk"])
+			if where == "" and step.has("turn_in"):
+				var take: Dictionary = step["turn_in"].get("take", {})
+				if Game.has_items(take):
+					where = "npc:" + String(step["turn_in"]["npc"])
+			if where != "":
+				break
+	if where == "":
+		return null
+	var pp := player.global_position
+	if where.begins_with("npc:"):
+		var n: NPC = npcs.get(where.substr(4))
+		if n == null:
+			return null
+		if n.state == "hidden":
+			return anchor_position("home", n.id)
+		return n.global_position + Vector3(0, n.model.height, 0)
+	if where.begins_with("anchor:"):
+		return anchor_position(where.substr(7), "") + Vector3(0, 1.5, 0)
+	if where.begins_with("spot:"):
+		return _nearest(forage_spots.filter(func(f): return f.kind == where.substr(5) and f.available), pp)
+	match where:
+		"litter":
+			return _nearest(litter_nodes.filter(func(l): return is_instance_valid(l)), pp)
+		"gift":
+			return _nearest(gift_spots.values().filter(func(g): return not Game.doorstep.has(g.npc_id)), pp)
+		"boulders":
+			return _nearest(boulders.filter(func(b): return is_instance_valid(b)), pp)
+		"bukken":
+			return bukken.global_position + Vector3(0, 1.4, 0)
+		"kite":
+			if Game.has_flag("kite_dropped"):
+				return _nearest(pickups.filter(func(p): return p.visible and p.item == "kite"), pp)
+			return kite_tree.global_position + Vector3(0, 6.5, 0)
+		"invite":
+			var left: Array = []
+			for id in NpcDB.trolls():
+				if not Game.has_flag("invited_" + id):
+					left.append(npcs[id])
+			return _nearest(left, pp)
+	return null
+
+
+func _nearest(nodes: Array, from: Vector3) -> Variant:
+	var best: Variant = null
+	var bd := 1e9
+	for n in nodes:
+		var d := (n as Node3D).global_position.distance_to(from)
+		if d < bd:
+			bd = d
+			best = (n as Node3D).global_position + Vector3(0, 1.2, 0)
+	return best
 
 
 func is_cutscene() -> bool:
@@ -620,6 +696,20 @@ func spawn_splash(p: Vector3) -> void:
 	spawn_puff(p + Vector3(0.5, 0, 0.3), Color(1, 1, 1))
 
 
-func _process(_delta: float) -> void:
+var _amb_t := 0.0
+
+
+func _process(delta: float) -> void:
 	if daynight:
 		daynight.update(Game.minutes)
+		Sound.set_night_amount(daynight.night_amount)
+	_amb_t -= delta
+	if _amb_t <= 0.0 and player and rig:
+		_amb_t = 0.4
+		# listen from the camera focus so the title screen orbit hears the valley too
+		var ear: Vector3 = rig.cam.global_position if not rig.override_pose.is_empty() else player.global_position
+		var q := Terrain.polyline_query(ear.x, ear.z, terrain.river_points())
+		var v := clampf(1.0 - (q.x - 3.0) / 22.0, 0.0, 1.0)
+		var fall := Vector2(ear.x - 31.0, ear.z + 48.0).length()
+		v = maxf(v, clampf(1.0 - fall / 40.0, 0.0, 1.0))
+		Sound.set_river_amount(v * v)

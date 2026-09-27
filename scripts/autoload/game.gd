@@ -38,6 +38,8 @@ var doorstep := {}
 var events_today: Array = []
 var picked := {}
 var cleaned := {}
+## Daily favours: [{npc, item, n, done, asked}]
+var requests: Array = []
 var player_pos := Vector3.ZERO
 var player_yaw := 0.0
 var has_player_pos := false
@@ -131,6 +133,7 @@ func new_game() -> void:
 	events_today = []
 	picked = {}
 	cleaned = {}
+	requests = []
 	has_player_pos = false
 	player_name = "Mose"
 
@@ -189,6 +192,7 @@ func advance_day() -> Array:
 	cleaned = {}
 	day += 1
 	minutes = DAY_START
+	generate_requests()
 	flags.erase("passed_out")
 	counters["litter_yesterday"] = counter("litter_today")
 	counters["litter_today"] = 0
@@ -200,6 +204,51 @@ func advance_day() -> Array:
 
 func log_event(e: Dictionary) -> void:
 	events_today.append(e)
+
+
+const TROLL_REWARDS := {"granny": "waffle", "stein": "crystal", "tussa": "feather", "lyng": "heather_tea", "gubben": "dried_fish"}
+
+
+## Pick one or two friends who would like a favour today.
+func generate_requests() -> void:
+	requests = []
+	if day < 2:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = day * 92821 + 17
+	var candidates: Array = []
+	for id in NpcDB.trolls():
+		candidates.append(id)
+	for id in NpcDB.humans():
+		if trust_stage(id) >= 3:
+			candidates.append(id)
+	var count := 1 if day < 4 else 2
+	for i in range(count):
+		if candidates.is_empty():
+			break
+		var who: String = candidates[rng.randi() % candidates.size()]
+		candidates.erase(who)
+		var pool: Array = []
+		for it in NpcDB.NPCS[who].get("loves", []) + NpcDB.NPCS[who].get("likes", []):
+			var cat := ItemDB.category(it)
+			if cat == "forage" or (cat == "crafted" and known_recipes.has(it)):
+				pool.append(it)
+		if pool.is_empty():
+			continue
+		var item: String = pool[rng.randi() % pool.size()]
+		var n := 1 if ItemDB.category(item) == "crafted" or item in ["crystal", "cloudberry"] else rng.randi_range(2, 3)
+		requests.append({"npc": who, "item": item, "n": n, "done": false, "asked": false})
+
+
+func request_for(npc_id: String) -> Dictionary:
+	for r in requests:
+		if r["npc"] == npc_id and not r["done"]:
+			return r
+	return {}
+
+
+func request_text(r: Dictionary) -> String:
+	return "%s would like %s." % [NpcDB.name_of(r["npc"]), ItemDB.count_name(r["item"], int(r["n"]))]
 
 
 # --------------------------------------------------------------------------
@@ -562,6 +611,9 @@ func active_quests() -> Array:
 func tracked_objective() -> String:
 	var act := active_quests()
 	if act.is_empty():
+		for r in requests:
+			if not r["done"]:
+				return "Favour: " + request_text(r)
 		return ""
 	var id: String = act[0]
 	var step := current_step(id)
@@ -590,6 +642,7 @@ func to_dict() -> Dictionary:
 		"events_today": events_today,
 		"picked": picked,
 		"cleaned": cleaned,
+		"requests": requests,
 		"player_pos": [player_pos.x, player_pos.y, player_pos.z],
 		"player_yaw": player_yaw,
 		"has_player_pos": has_player_pos,
@@ -622,6 +675,10 @@ func from_dict(d: Dictionary) -> void:
 	for k in pk.keys():
 		picked[k] = int(pk[k])
 	cleaned = d.get("cleaned", {})
+	requests = []
+	for r in d.get("requests", []):
+		requests.append({"npc": r.get("npc", ""), "item": r.get("item", ""), "n": int(r.get("n", 1)),
+			"done": bool(r.get("done", false)), "asked": bool(r.get("asked", false))})
 	var p: Array = d.get("player_pos", [0, 0, 0])
 	player_pos = Vector3(p[0], p[1], p[2])
 	player_yaw = float(d.get("player_yaw", 0.0))

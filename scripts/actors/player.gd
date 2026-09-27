@@ -16,6 +16,7 @@ var world: Node
 var busy := false
 var carrying := false
 var focus: Interactable
+var _focus_shown := false
 var facing := Vector3(0, 0, 1)
 var _step_timer := 0.0
 var _last_safe := Vector3.ZERO
@@ -119,15 +120,16 @@ func _physics_process(delta: float) -> void:
 	# interaction focus
 	if not busy:
 		_update_focus()
-	elif focus != null:
+	elif _focus_shown:
 		focus = null
+		_focus_shown = false
 		emit_signal("focus_changed", null)
 
 
 func _update_focus() -> void:
-	if focus != null and not is_instance_valid(focus):
+	# note: a freed object compares equal to null, so track validity explicitly
+	if not is_instance_valid(focus):
 		focus = null
-		emit_signal("focus_changed", null)
 	var best: Interactable = null
 	var best_score := 1e9
 	var pos := global_position
@@ -145,8 +147,9 @@ func _update_focus() -> void:
 		if score < best_score:
 			best_score = score
 			best = it
-	if best != focus:
+	if best != focus or (best == null and _focus_shown):
 		focus = best
+		_focus_shown = best != null
 		emit_signal("focus_changed", focus)
 
 
@@ -158,5 +161,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		face_toward(focus.global_position)
 		var f := focus
 		focus = null
+		_focus_shown = false
 		emit_signal("focus_changed", null)
 		f.interact(self)

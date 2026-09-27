@@ -39,7 +39,7 @@ FLATS = [
 
 PATHS = [
     {"name": "trail", "width": 3.2, "pts": [
-        (0, 28, None), (-3, 16, None), (3, 0, None), (0, -14, None), (-6, -28, None),
+        (-7, 37, None), (-9.5, 27, None), (-7, 16, None), (3, 0, None), (0, -14, None), (-6, -28, None),
         (-9, -40, 15.8), (-18, -49, 21.5), (-27, -58, 27.4), (-25, -69, None), (-20, -78, None)]},
     {"name": "home", "width": 2.6, "pts": [(-20, -78, None), (-29, -90, None), (-35, -100, None)]},
     {"name": "granny", "width": 2.6, "pts": [(-20, -78, None), (-10, -85, None), (-3, -89, None)]},
@@ -49,7 +49,7 @@ PATHS = [
     {"name": "bridge", "width": 2.6, "pts": [(2, -4, None), (18, -10, None), (34, -12, 9.4), (50, -15, None), (60, -19, None)]},
     {"name": "east_road", "width": 4.0, "pts": [(6, 45, None), (24, 46, None), (48, 42, 3.4), (72, 46, None), (100, 50, None), (130, 52, None)]},
     {"name": "farm_road", "width": 3.4, "pts": [(-6, 44, None), (-26, 42, None), (-44, 41, None)]},
-    {"name": "dock", "width": 2.6, "pts": [(3, 50, None), (8, 60, None), (9, 66, None)]},
+    {"name": "dock", "width": 2.6, "pts": [(3, 50, None), (8, 60, None), (9, 69.5, None)]},
     {"name": "lane_bakery", "width": 2.4, "pts": [(-6, 41, None), (-15, 38, None)]},
     {"name": "lane_store", "width": 2.4, "pts": [(6, 41, None), (15, 36, None)]},
     {"name": "lane_astrid", "width": 2.4, "pts": [(-5, 49, None), (-21, 53, None)]},
@@ -61,7 +61,7 @@ PATHS = [
 LANDMARKS = {
     "square": (0, 44), "bakery": (-17, 35), "store": (17, 33), "mayor": (0, 24),
     "astrid": (-24, 55), "ole": (24, 58), "farm": (-50, 42), "chapel": (30, 18),
-    "bonfire": (-14, 62), "dock": (9, 75), "rockslide": (72, 46), "bridgeV": (48, 42),
+    "bonfire": (-14, 62), "dock": (9, 78), "rockslide": (72, 46), "bridgeV": (48, 42),
     "trollbridge": (34, -12), "glade": (62, -20), "ring": (-20, -78), "home": (-36, -103),
     "granny": (-2, -91), "stein": (-57, -82), "lyng": (15, -105), "lake": (35, -96),
     "bog": (-66, -104), "fall": (31, -50),

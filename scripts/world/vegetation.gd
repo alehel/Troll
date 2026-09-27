@@ -256,13 +256,13 @@ func _scatter_rocks() -> void:
 			continue
 		if blocked.is_valid() and blocked.call(px, pz):
 			continue
-		if terrain.path_distance(px, pz) < 2.0 or h < 0.5:
-			continue
-		if terrain.river_weight_at(px, pz) > 0.3:
-			continue
 		var s := _rng.randf_range(0.4, 1.6)
 		if _rng.randf() < 0.1:
 			s *= 1.8
+		if terrain.path_distance(px, pz) < 1.4 + 1.0 * s or h < 0.5:
+			continue
+		if terrain.river_weight_at(px, pz) > 0.3:
+			continue
 		var basis := Basis.from_euler(Vector3(_rng.randf_range(-0.2, 0.2), _rng.randf() * TAU, 0)).scaled(Vector3(s, s, s))
 		var tr := Transform3D(basis, Vector3(px, h - 0.15 * s, pz))
 		var v := _rng.randi() % 3

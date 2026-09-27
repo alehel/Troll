@@ -119,6 +119,18 @@ func _build_tasks() -> void:
 		content.add_child(UiTheme.label(star + q.get("title", qid), 11, UiTheme.INK, true))
 		_wrap("    " + Game.current_step(qid).get("text", ""), 10)
 		_wrap("    " + q.get("desc", ""), 9, UiTheme.INK_SOFT)
+	var open_req: Array = []
+	for r in Game.requests:
+		if not r["done"]:
+			open_req.append(r)
+	if not open_req.is_empty():
+		_section("Today's favours")
+		for r in open_req:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 4)
+			content.add_child(row)
+			row.add_child(UiTheme.icon(r["item"], 12))
+			row.add_child(UiTheme.label("%s  (you have %d)" % [Game.request_text(r), Game.count(r["item"])], 10))
 	var done: Array = []
 	for qid in QuestDB.ORDER:
 		if Game.is_done(qid):

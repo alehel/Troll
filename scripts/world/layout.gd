@@ -50,7 +50,7 @@ const FLATS := [
 
 ## Paths: name, width, points (x, z, y or NAN for "follow the ground").
 const PATHS := [
-	["trail", 3.2, [Vector3(0, NAN, 28), Vector3(-3, NAN, 16), Vector3(3, NAN, 0), Vector3(0, NAN, -14),
+	["trail", 3.2, [Vector3(-7, NAN, 37), Vector3(-9.5, NAN, 27), Vector3(-7, NAN, 16), Vector3(3, NAN, 0), Vector3(0, NAN, -14),
 		Vector3(-6, NAN, -28), Vector3(-9, 15.8, -40), Vector3(-18, 21.5, -49), Vector3(-27, 27.4, -58),
 		Vector3(-25, NAN, -69), Vector3(-20, NAN, -78)]],
 	["home", 2.6, [Vector3(-20, NAN, -78), Vector3(-29, NAN, -90), Vector3(-35, NAN, -100)]],
@@ -63,7 +63,7 @@ const PATHS := [
 	["east_road", 4.0, [Vector3(6, NAN, 45), Vector3(24, NAN, 46), Vector3(48, 3.4, 42), Vector3(72, NAN, 46),
 		Vector3(100, NAN, 50), Vector3(130, NAN, 52)]],
 	["farm_road", 3.4, [Vector3(-6, NAN, 44), Vector3(-26, NAN, 42), Vector3(-44, NAN, 41)]],
-	["dock", 2.6, [Vector3(3, NAN, 50), Vector3(8, NAN, 60), Vector3(9, NAN, 66)]],
+	["dock", 2.6, [Vector3(3, NAN, 50), Vector3(8, NAN, 60), Vector3(9, NAN, 69.5)]],
 	["lane_bakery", 2.4, [Vector3(-6, NAN, 41), Vector3(-15, NAN, 38)]],
 	["lane_store", 2.4, [Vector3(6, NAN, 41), Vector3(15, NAN, 36)]],
 	["lane_astrid", 2.4, [Vector3(-5, NAN, 49), Vector3(-21, NAN, 53)]],
@@ -92,8 +92,8 @@ const ANCHORS := {
 	"store_bench": Vector2(10, 37),
 	"beach": Vector2(-12, 60),
 	"bonfire": Vector2(-14, 63),
-	"dock": Vector2(9, 71),
-	"dock_end": Vector2(9, 79),
+	"dock": Vector2(9, 74),
+	"dock_end": Vector2(9, 82),
 	"net_rack": Vector2(16, 63),
 	"farm_pen": Vector2(-52, 50),
 	"farm_yard": Vector2(-44, 44),
@@ -125,8 +125,8 @@ const ANCHORS := {
 const NAV := {
 	"S": Vector2(0, 44), "SN": Vector2(0, 35), "SE": Vector2(8, 43), "SW": Vector2(-8, 43), "SS": Vector2(0, 51),
 	"M": Vector2(0, 30), "B1": Vector2(-8, 40), "B": Vector2(-12, 38.5), "ST1": Vector2(8, 40), "ST": Vector2(12, 37),
-	"A1": Vector2(-6, 49), "A": Vector2(-19, 52.5), "D0": Vector2(4, 52), "D1": Vector2(8, 60), "D2": Vector2(9, 67),
-	"D3": Vector2(9, 72), "D4": Vector2(9, 79), "O": Vector2(19.5, 58), "NR": Vector2(16, 63),
+	"A1": Vector2(-6, 49), "A": Vector2(-19, 52.5), "D0": Vector2(4, 52), "D1": Vector2(8, 60), "D2": Vector2(9, 70),
+	"D3": Vector2(9, 74), "D4": Vector2(9, 82), "O": Vector2(19.5, 58), "NR": Vector2(16, 63),
 	"BE1": Vector2(-5, 51), "BE": Vector2(-12, 60), "BF": Vector2(-14, 63),
 	"F1": Vector2(-18, 43), "F2": Vector2(-30, 42), "F3": Vector2(-44, 42), "F4": Vector2(-50, 49), "FH": Vector2(-47, 39.5),
 	"E1": Vector2(16, 45), "E2": Vector2(24, 46), "C1": Vector2(27, 34), "C": Vector2(28.5, 23),

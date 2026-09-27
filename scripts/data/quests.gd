@@ -31,7 +31,7 @@ const QUESTS := {
 				"Listen, dear. My porridge is sad. Porridge without blueberries is just... wet sadness.",
 				"Would you pick me 3 Blueberries? The bushes grow all over the plateau. Look for the blue dots.",
 			]},
-			{"text": "Pick 3 Blueberries from the bushes on the plateau.", "goal": {"have": {"blueberry": 3}}},
+			{"text": "Pick 3 Blueberries from the bushes on the plateau.", "where": "spot:bush_blue", "goal": {"have": {"blueberry": 3}}},
 			{"text": "Bring 3 Blueberries to Granny Ur.", "turn_in": {"npc": "granny", "take": {"blueberry": 3}}, "lines": [
 				"Ooh, plump ones! You have good eyes for a troll with such a big nose.",
 				"Now, let me teach you something every troll should know: jam.",
@@ -39,7 +39,7 @@ const QUESTS := {
 				"Cook it at the cauldron in your hollow. 3 berries in, 1 jar out. Magic! Well, cooking.",
 			], "remind": ["3 Blueberries, dear. The blue ones. Not the rocks. Stein, stop giving the child rocks."],
 				"on_done": [{"recipe": "blueberry_jam"}, {"recipe": "lingonberry_jam"}, {"recipe": "moss_pillow"}]},
-			{"text": "Cook a Blueberry Jam at the cauldron in your hollow.", "goal": {"flag": "crafted_blueberry_jam"}},
+			{"text": "Cook a Blueberry Jam at the cauldron in your hollow.", "where": "anchor:cauldron", "goal": {"flag": "crafted_blueberry_jam"}},
 			{"text": "Show your jam to Granny Ur.", "talk": "granny", "lines": [
 				"Look at that! A proper jar of jam. I'm so proud I could crumble.",
 				"You know... you've always wanted to visit the humans in the village down by the fjord.",
@@ -54,7 +54,7 @@ const QUESTS := {
 		"title": "Hello, Humans!", "main": true, "giver": "granny",
 		"desc": "Go down to the village and make some new friends.",
 		"steps": [
-			{"text": "Follow the trail down to Lillevik and say hello to a human.", "goal": {"flag": "first_flee"}},
+			{"text": "Follow the trail down to Lillevik and say hello to a human.", "where": "anchor:square", "goal": {"flag": "first_flee"}},
 			{"text": "That... didn't go as planned. Go back and ask Granny Ur about it.", "talk": "granny", "lines": [
 				"> Granny! The humans screamed and ran away! Every single one!",
 				"Ah. Yes. I was afraid of that.",
@@ -73,9 +73,9 @@ const QUESTS := {
 		"title": "Secret Kindness", "main": true, "giver": "granny",
 		"desc": "The humans are shy. Help them in secret, and let them discover you're kind.",
 		"steps": [
-			{"text": "Leave a gift in a villager's doorstep basket.", "goal": {"flag": "doorstep_gift"}},
-			{"text": "Tidy up 3 pieces of litter in the village.", "goal": {"counter": ["litter", 3]}},
-			{"text": "Sleep in your moss bed and see what the village makes of it.", "goal": {"flag": "read_paper"}},
+			{"text": "Leave a gift in a villager's doorstep basket.", "where": "gift", "goal": {"flag": "doorstep_gift"}},
+			{"text": "Tidy up 3 pieces of litter in the village.", "where": "litter", "goal": {"counter": ["litter", 3]}},
+			{"text": "Sleep in your moss bed and see what the village makes of it.", "where": "anchor:home_bed", "goal": {"flag": "read_paper"}},
 		],
 		"on_complete": [{"start": "m4_strength"}, {"village_trust": 3.0}],
 	},
@@ -91,7 +91,7 @@ const QUESTS := {
 				"> Is that really a test, or do you just want crystals?",
 				"...Both. Both is good.",
 			]},
-			{"text": "Find 2 Mountain Crystals near the cliffs around the waterfall.", "goal": {"have": {"crystal": 2}}},
+			{"text": "Find 2 Mountain Crystals near the cliffs around the waterfall.", "where": "spot:crystal", "goal": {"have": {"crystal": 2}}},
 			{"text": "Bring 2 Mountain Crystals to Stein.", "turn_in": {"npc": "stein", "take": {"crystal": 2}}, "lines": [
 				"*sniff* They're beautiful. Okay. The Troll Lift.",
 				"Bend your knees. Hug the rock. Tell it something nice. Then LIFT.",
@@ -99,7 +99,7 @@ const QUESTS := {
 				"Rocks are heavy because they are sad. Nobody hugs them. Hrm.",
 				"* You learned the Troll Lift! You can now move great boulders.",
 			], "remind": ["2 Mountain Crystals. By the cliffs near the waterfall. Sparkly."], "on_done": [{"flag": "troll_lift"}]},
-			{"text": "Clear the rockslide on the east road out of Lillevik (5 boulders).", "goal": {"counter": ["boulders", 5]}},
+			{"text": "Clear the rockslide on the east road out of Lillevik (5 boulders).", "where": "boulders", "goal": {"counter": ["boulders", 5]}},
 		],
 		"on_complete": [{"village_trust": 6.0}, {"flag": "road_cleared"}],
 	},
@@ -117,7 +117,7 @@ const QUESTS := {
 				"Nobody will go get it. Because of... um. Trolls.",
 				"> Don't worry, Astrid. I'll find your kite!",
 			]},
-			{"text": "Find Astrid's kite. It got stuck in a tall tree in the forest west of the trail.", "goal": {"have": {"kite": 1}}},
+			{"text": "Find Astrid's kite. It got stuck in a tall tree in the forest west of the trail.", "where": "kite", "goal": {"have": {"kite": 1}}},
 			{"text": "Return the kite to Astrid.", "turn_in": {"npc": "astrid", "take": {"kite": 1}}, "allow_scared": true, "lines": [
 				"MY KITE! You found it! You really found it!",
 				"Papa says trolls eat children. Do you eat children?",
@@ -149,8 +149,8 @@ const QUESTS := {
 				"It went east, toward the berry glade. Probably eating something it shouldn't.",
 				"Hm. That reminds me of a family story. Never mind. Off you go.",
 			]},
-			{"text": "Find Bukken the goat east of the old stone bridge.", "goal": {"flag": "goat_found"}},
-			{"text": "Lead Bukken home to the goat pen at Lars' farm (west side of the village).", "goal": {"flag": "goat_home"}},
+			{"text": "Find Bukken the goat east of the old stone bridge.", "where": "bukken", "goal": {"flag": "goat_found"}},
+			{"text": "Lead Bukken home to the goat pen at Lars' farm (west side of the village).", "where": "anchor:farm_pen", "goal": {"flag": "goat_home"}},
 			{"text": "Talk to Lars at the farm.", "talk": "lars", "allow_scared": true, "lines": [
 				"BUKKEN! My Bukken! You're alive!",
 				"And you... you brought him back? You didn't... eat him?",
@@ -167,7 +167,7 @@ const QUESTS := {
 		"desc": "Mayor Margit has called a village meeting. The topic: you.",
 		"auto": {"all": [{"quest_done": "m6_goat"}, {"village": 38.0}]},
 		"steps": [
-			{"text": "Something new is pinned to the notice board in the village square. Read it.", "goal": {"flag": "read_meeting_notice"}},
+			{"text": "Something new is pinned to the notice board in the village square. Read it.", "where": "anchor:notice_board", "goal": {"flag": "read_meeting_notice"}},
 			{"text": "Earn the trust of every villager, so none of them are afraid of you (all at least 'Wary').", "goal": {"stage_all": 2}},
 			{"text": "Talk to Mayor Margit about the meeting.", "talk": "margit", "lines": [
 				"Ah. {name}. The troll. The village held its meeting last night.",
@@ -187,7 +187,7 @@ const QUESTS := {
 		"title": "The Harvest Festival", "main": true, "giver": "margit",
 		"desc": "Help prepare the first ever Harvest Festival for trolls and humans together.",
 		"steps": [
-			{"text": "Invite your troll friends to the festival: Granny Ur, Stein, Tussa, Lyng and Gubben Grå.", "goal": {"counter": ["invited", 5]}},
+			{"text": "Invite your troll friends to the festival: Granny Ur, Stein, Tussa, Lyng and Gubben Grå.", "where": "invite", "goal": {"counter": ["invited", 5]}},
 			{"text": "Bring 3 Cloudberries to Ingrid for the festival cake.", "turn_in": {"npc": "ingrid", "take": {"cloudberry": 3}}, "lines": [
 				"Cloudberries! Now THIS will be a cake worthy of trolls.",
 				"A cloudberry cream cake. Six layers. No, seven! Do trolls like seven?",
@@ -207,7 +207,7 @@ const QUESTS := {
 				"The festival begins tonight at 20:00, down by the bonfire on the beach.",
 				"Don't be late, {name}. You're the guest of honour.",
 			], "on_done": [{"flag": "festival_ready"}]},
-			{"text": "Go to the bonfire on the beach after 20:00 for the Harvest Festival.", "goal": {"flag": "festival_done"}},
+			{"text": "Go to the bonfire on the beach after 20:00 for the Harvest Festival.", "where": "anchor:bonfire", "goal": {"flag": "festival_done"}},
 		],
 		"on_complete": [{"flag": "game_complete"}],
 	},
@@ -242,9 +242,9 @@ const QUESTS := {
 			"* Tussa scampers off, giggling loudly.",
 		]},
 		"steps": [
-			{"text": "Find Tussa, who is hiding somewhere on the plateau. (Found 0/3)", "goal": {"counter": ["tussa_found", 1]}},
-			{"text": "Find Tussa again! (Found 1/3)", "goal": {"counter": ["tussa_found", 2]}},
-			{"text": "Find Tussa one last time! (Found 2/3)", "goal": {"counter": ["tussa_found", 3]}},
+			{"text": "Find Tussa, who is hiding somewhere on the plateau. (Found 0/3)", "where": "npc:tussa", "goal": {"counter": ["tussa_found", 1]}},
+			{"text": "Find Tussa again! (Found 1/3)", "where": "npc:tussa", "goal": {"counter": ["tussa_found", 2]}},
+			{"text": "Find Tussa one last time! (Found 2/3)", "where": "npc:tussa", "goal": {"counter": ["tussa_found", 3]}},
 			{"text": "Talk to Tussa.", "talk": "tussa", "lines": [
 				"Aww, you found me AGAIN! How did you do it?",
 				"> Your tail was sticking out. Every time.",
@@ -312,7 +312,7 @@ const QUESTS := {
 			"The wind took it up toward the cliffs, west of the waterfall trail. Not that I expect a troll to care.",
 		]},
 		"steps": [
-			{"text": "Find Ole's yellow hat near the cliff edge west of the mountain trail.", "goal": {"have": {"lucky_hat": 1}}},
+			{"text": "Find Ole's yellow hat near the cliff edge west of the mountain trail.", "where": "anchor:hat_rock", "goal": {"have": {"lucky_hat": 1}}},
 			{"text": "Return the lucky hat to Ole.", "turn_in": {"npc": "ole", "take": {"lucky_hat": 1}}, "lines": [
 				"My hat! My lucky hat!",
 				"...",
